@@ -29,8 +29,8 @@ var decrease = true;
 var stop = true;
 var body = document.querySelector("body");
 function stopLight(){
-  if(!stop) lightPower = {
-    1.0;
+  if(!stop) {
+    lightPower = 1.0;
     body.style.backgroundImage = "linear-gradient(rgb(0 0 0 / 0%), rgb(0 0 0 / 0%)), url(galaxy.jpg)";
   }
   stop = !stop;
