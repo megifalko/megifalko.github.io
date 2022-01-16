@@ -27,9 +27,12 @@ window.onload = async () => {
 var lightPower = 1.0;
 var decrease = true;
 var stop = true;
-
+var body = document.querySelector("body");
 function stopLight(){
-  if(!stop) lightPower = 1.0;
+  if(!stop) lightPower = {
+    1.0;
+    body.style.backgroundImage = "linear-gradient(rgb(0 0 0 / 0%), rgb(0 0 0 / 0%)), url(galaxy.jpg)";
+  }
   stop = !stop;
 }
 
@@ -42,6 +45,7 @@ function adjustLight() {
     lightPower += lightPower > 0.7 ? 0.001 : 0.0005;
     if (lightPower >= 1.0) decrease = true;
   }
+  body.style.backgroundImage = "linear-gradient(rgb(0 0 0 / " +parseInt(lightPower*100.0).toString() +"%), rgb(0 0 0 / " +parseInt(lightPower*100.0).toString() +"%)), url(galaxy.jpg)";
 }
 
 var reflectorPos = [
