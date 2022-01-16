@@ -1,13 +1,13 @@
 body {
   margin: 0;
   background-color: black;
+  background-image: linear-gradient(rgb(0 0 0 / 0%), rgb(0 0 0 / 0%)), url(galaxy.jpg);
+  background-size: cover;
 }
 canvas {
   width: 100vw;
   height: 90vh;
   display: block;
-  background: url('galaxy.jpg');
-  background-size: cover;
 }
 #panel{
   background-color: black;
