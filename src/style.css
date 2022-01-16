@@ -6,7 +6,7 @@ canvas {
   width: 100vw;
   height: 90vh;
   display: block;
-  background: url('https://megifalko.github.io/galaxy.jpg')
+  background: url('galaxy.jpg')
     background-size: cover;
 }
 #panel{
