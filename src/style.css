@@ -1,0 +1,17 @@
+body {
+  margin: 0;
+  background-color: black;
+}
+canvas {
+  width: 100vw;
+  height: 90vh;
+  display: block;
+  background: url('https://megifalko.github.io/galaxy.jpg')
+    background-size: cover;
+}
+#panel{
+  background-color: black;
+}
+#day{
+  color: white;
+}
