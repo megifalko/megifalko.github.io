@@ -1,0 +1,491 @@
+<canvas id="canvas"></canvas>
+<link rel="stylesheet" href="style.css">
+<div id="panel">
+<select onchange="shadingChanged()" id="select_shading">
+  <option value="1">Gouraud Shading</option>
+  <option value="2">Phong Shading</option>
+  <option value="3">Flat Shading</option>
+</select>
+<select onchange="updateLightingModel()" id="select_lighting">
+  <option value="1">Phong</option>
+  <option value="2">Blinn</option>
+</select>
+<select onchange="cameraChanged()" id="select_camera">
+  <option value="1">View from above</option>
+  <option value="2">View from Sun</option>
+  <option value="3">Following Earth</option>
+</select>
+<td id="slider-x-v">1.0</td>
+<input
+  id="slider-x"
+  type="range"
+  width="30px"
+  value="-100"
+  min="-400"
+  max="400"
+  step="10.0"
+  slide="updateLight()"
+  onChange="updateLight()"
+  onInput="updateLight()"
+/>
+<td id="slider-y-v">1.0</td>
+<input
+  id="slider-y"
+  type="range"
+  width="30px"
+  value="-100"
+  min="-400"
+  max="400"
+  step="10.0"
+  slide="updateLight()"
+  onChange="updateLight()"
+  onInput="updateLight()"
+/>
+<td id="slider-z-v">1.0</td>
+<input
+  id="slider-z"
+  type="range"
+  width="30px"
+  value="100"
+  min="-400"
+  max="400"
+  step="10.0"
+  slide="updateLight()"
+  onChange="updateLight()"
+  onInput="updateLight()"
+/>
+
+<td id="slider-rx-v">1.0</td>
+<input
+  id="slider-rx"
+  type="range"
+  width="30px"
+  value="0"
+  min="-200"
+  max="200"
+  step="10.0"
+  slide="updateLight()"
+  onChange="updateLight()"
+  onInput="updateMovingLight()"
+/>
+<td id="slider-ry-v">1.0</td>
+<input
+  id="slider-ry"
+  type="range"
+  width="30px"
+  value="0"
+  min="-200"
+  max="200"
+  step="10.0"
+  slide="updateLight()"
+  onChange="updateLight()"
+  onInput="updateMovingLight()"
+/>
+<td id="slider-rz-v">1.0</td>
+<input
+  id="slider-rz"
+  type="range"
+  width="30px"
+  value="0"
+  min="-200"
+  max="200"
+  step="10.0"
+  slide="updateLight()"
+  onChange="updateLight()"
+  onInput="updateMovingLight()"
+/>
+<div>
+  <input type="checkbox" id="daytonight" name="Day-night" onChange="stopLight()">
+  <label id="day" for="Day-night">Day-night</label>
+</div>
+  </div>
+<script src="https://cdn.jsdelivr.net/npm/webgl-obj-loader@2.0.8/dist/webgl-obj-loader.min.js"></script>
+<script
+  src="https://code.jquery.com/jquery-3.6.0.min.js"
+  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+  crossorigin="anonymous"
+></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.6.1/gl-matrix-min.js"></script>
+<script src="script.js"></script>
+<script id="vertex-shader-3d-1" type="x-shader/x-vertex">#version 300 es
+  precision mediump float;
+  in vec4 a_position;
+  in vec4 a_color;
+  in vec4 a_normal;
+
+  uniform mat4 MVmatrix;
+  uniform mat4 Pmatrix;
+  uniform mat4 NMmatrix;
+  uniform mat4 Vmatrix;
+  uniform mat4 Mmatrix;
+  uniform vec4 u_color;
+  uniform vec3 u_reflectorPos;
+  uniform float u_blinn;
+  uniform float u_power;
+  uniform vec3 u_rocketPos;
+  uniform float u_shadingMode;
+  uniform vec3 u_worldPos;
+
+  out vec4 v_color;
+  out vec3 v_position;
+  
+  float shininessVal = 80.0;
+  float mR = 50.0;
+  float limit = 0.83;
+  float innerLimit = 0.93;
+  float outerLimit = 0.95;
+
+  void main() {
+    vec3 lightPos = vec3(100, -300, 110);
+    vec3 ambient_color = vec3(0.4 , 0.4, 0.4);
+    vec3 diffuse_color = vec3(1.0 , 1.0,1.0);
+    vec3 specular_color = vec3(1.0 , 1.0,1.0);
+
+    //reflectors
+    vec3 reflector1Pos = u_reflectorPos;
+    vec3 reflector2Pos = u_rocketPos;
+    vec3 diffuse_color1 = vec3(1.0, 1.0, 1.0);
+    vec3 specular_color1 = vec3(1.0, 1.0, 1.0);
+    vec3 specular_color2 = vec3(1.0, 0.0, 1.0);
+
+    vec3 vertPos = (Mmatrix * a_position).xyz;
+    vec3 normal = vec3(NMmatrix * vec4(a_normal.xyz, 0.0));
+    gl_Position = Pmatrix * MVmatrix * a_position;
+    v_position = (MVmatrix * a_position).xyz;
+
+    vec3 N = normalize(normal);
+    vec3 L = normalize(lightPos - vertPos);
+    vec3 LR = normalize(reflector1Pos - vertPos);
+    vec3 LM = normalize(reflector2Pos - vertPos);
+    vec3 V = normalize(-vertPos);
+    vec3 H = normalize(L + V);
+    vec3 HR = normalize(LR + V);
+    vec3 HM = normalize(LM + V);
+
+    float lambertian = max(dot(N, L), 0.0);
+    float specular = 0.0;
+
+    if(lambertian > 0.0) {
+      vec3 R = reflect(-L, N);
+      float specAngle = max(dot(R, V), 0.0);
+      specular = pow(specAngle, shininessVal);
+    }
+    
+    if(u_blinn == 1.0 && lambertian > 0.0){
+      float specAngle = clamp(dot(H, N), 0.0, 1.0);
+      specular = pow(specAngle, shininessVal);
+    }
+
+    //Reflector
+    float lambertianR = max(dot(N, LR), 0.0);
+    lambertian += lambertianR;
+
+    if(u_blinn != 1.0 && lambertianR > 0.0) {
+      vec3 RR = reflect(-LR, N);
+      float specAngle1 = max(dot(RR, V), 0.0);
+      specular += pow(specAngle1, mR);
+    }
+
+    if(u_blinn == 1.0 && lambertianR > 0.0){
+      float specAngle1 = clamp(dot(HR, N), 0.0, 1.0);
+      specular += pow(specAngle1, mR);
+    }
+
+    //Moving reflector
+    float lambertianM = max(dot(N, LM), 0.0);
+    float inner = cos(radians(6.0));
+    float outer = cos(radians(8.0));
+    float theta = dot(LM, normalize(u_rocketPos));
+    float epsilon   = inner - outer;
+    float intensity = clamp((theta - outer) / epsilon, 0.0, 1.0);
+    lambertianM *= intensity;
+    if(theta > outer){
+      float inLight = max(dot(N, LM), 0.0);
+      float lightM = inLight * lambertianM;
+      specular += inLight * pow(max(dot(N,HM),0.0), shininessVal);
+    }
+    
+    float attenuation = 1.0 / (1.0 + 0.000001 * pow(length(L), 2.0));
+
+    v_color = vec4(vec3(ambient_color + attenuation * ((lambertian * diffuse_color +                     lambertianM * vec3(1.0, 0.0, 0.0)) + (specular * specular_color))), 1.0);
+
+  }
+</script>
+
+<!-- fragment shader -->
+<script id="fragment-shader-3d-1" type="x-shader/x-fragment">#version 300 es
+  precision mediump float;
+  uniform float u_fogDensity;
+  uniform vec4 u_fogColor;
+  uniform vec4 u_color;
+  uniform float u_power;
+
+  vec3 normal;
+  vec3 vertPos;
+
+  in vec4 v_color;
+  in vec3 v_position;
+  out vec4 fragColor;
+
+  void main() {
+    #define LOG2 1.442695
+
+    float fogDistance = length(v_position);
+    float fogAmount = 1. - exp2(-pow(u_fogDensity,2.0)*pow(fogDistance,2.0)*LOG2);
+    fogAmount = clamp(fogAmount, 0., 1.);
+    fragColor = vec4(u_power * u_color.rgb * v_color.rgb, 1.0);
+    fragColor = mix(fragColor, u_fogColor, fogAmount);
+  }
+</script>
+<script id="vertex-shader-3d-2" type="x-shader/x-vertex">#version 300 es
+  in vec4 a_position;
+  in vec4 a_normal;
+
+  uniform mat4 MVmatrix;
+  uniform mat4 Pmatrix;
+  uniform mat4 NMmatrix;
+  uniform mat4 Mmatrix;
+
+  out vec3 normal;
+  out vec3 vertPos;
+  out vec3 v_position;
+
+  void main() {
+    vertPos = (Mmatrix * a_position).xyz;
+    normal = vec3(NMmatrix * vec4(a_normal.xyz, 0.0));
+    gl_Position = Pmatrix * MVmatrix * a_position;
+    v_position = (MVmatrix * a_position).xyz;
+  }
+</script>
+<!-- fragment shader -->
+<script id="fragment-shader-3d-2" type="x-shader/x-fragment">#version 300 es
+  precision mediump float;
+  uniform float u_fogDensity;
+  uniform vec4 u_fogColor;
+  uniform float u_shadingMode;
+  uniform mat4 MVmatrix;
+  uniform mat4 Pmatrix;
+  uniform mat4 NMmatrix;
+  uniform vec4 u_color;
+  uniform float u_blinn;
+  uniform float u_power;
+  uniform vec3 u_rocketPos;
+  uniform vec3 u_reflectorPos;
+
+  in vec3 normal;
+  in vec3 vertPos;
+  in vec3 v_position;
+  out vec4 fragColor;
+  
+  float shininessVal = 80.0;
+  float mR = 50.0;
+  float limit = 0.83;
+  float innerLimit = 0.93;
+  float outerLimit = 0.95;
+  vec3 lightPos = vec3(0, 0, 0);
+  vec3 ambient_color = vec3(0.4 , 0.4, 0.4);
+  vec3 diffuse_color = vec3(1.0 , 1.0,1.0);
+  vec3 specular_color = vec3(1.0 , 1.0,1.0);
+  
+  void main() {
+    #define LOG2 1.442695
+    float fogDistance = length(v_position);
+    float fogAmount = 1. - exp2(-pow(u_fogDensity,2.0)*pow(fogDistance,2.0)*LOG2);
+    fogAmount = clamp(fogAmount, 0., 1.);
+
+    vec3 reflector1Pos = u_reflectorPos;
+    vec3 reflector2Pos = u_rocketPos;
+
+    vec3 N = normalize(normal);
+    vec3 L = normalize(lightPos - vertPos);
+    vec3 LR = normalize(reflector1Pos - vertPos);
+    vec3 LM = normalize(reflector2Pos - vertPos);
+    vec3 V = normalize(-vertPos);
+    vec3 H = normalize(L + V);
+    vec3 HR = normalize(LR + V);
+    vec3 HM = normalize(LM + V);
+
+    float lambertian = max(dot(N, L), 0.0);
+    float specular = 0.0;
+
+    if(lambertian > 0.0) {
+      vec3 R = reflect(-L, N);
+      float specAngle = max(dot(R, V), 0.0);
+      specular = pow(specAngle, shininessVal);
+    }
+    
+    if(u_blinn == 1.0 && lambertian > 0.0){
+      float specAngle = clamp(dot(H, N), 0.0, 1.0);
+      specular = pow(specAngle, shininessVal);
+    }
+
+    //Reflector
+    float lambertianR = max(dot(N, LR), 0.0);
+    lambertian += lambertianR;
+
+    if(u_blinn != 1.0 && lambertianR > 0.0) {
+      vec3 RR = reflect(-LR, N);
+      float specAngle1 = max(dot(RR, V), 0.0);
+      specular += pow(specAngle1, mR);
+    }
+
+    if(u_blinn == 1.0 && lambertianR > 0.0){
+      float specAngle1 = clamp(dot(HR, N), 0.0, 1.0);
+      specular += pow(specAngle1, mR);
+    }
+
+    //Moving reflector
+    float lambertianM = max(dot(N, LM), 0.0);
+    float inner = cos(radians(6.0));
+    float outer = cos(radians(8.0));
+    float theta = dot(LM, normalize(u_rocketPos));
+    float epsilon   = inner - outer;
+    float intensity = clamp((theta - outer) / epsilon, 0.0, 1.0);
+    lambertianM *= intensity;
+    if(theta > outer){
+      float inLight = max(dot(N, LM), 0.0);
+      float lightM = inLight * lambertianM;
+      specular += inLight * pow(max(dot(N,HM),0.0), shininessVal);
+    }
+    
+    float attenuation = 1.0 / (1.0 + 0.000001 * pow(length(L), 2.0));
+
+    vec3 light = vec3(ambient_color + attenuation * ((lambertian * diffuse_color +                     lambertianM * vec3(1.0, 0.0, 0.0)) + (specular * specular_color)));
+    
+    fragColor = vec4(u_power * u_color.rgb * light.rgb, 1.0);
+    fragColor = mix(fragColor, u_fogColor, fogAmount);
+  }
+</script>
+<script id="vertex-shader-3d-3" type="x-shader/x-vertex">#version 300 es
+  precision mediump float;
+  in vec4 a_position;
+  in vec4 a_color;
+  in vec4 a_normal;
+
+  uniform mat4 MVmatrix;
+  uniform mat4 Pmatrix;
+  uniform mat4 NMmatrix;
+  uniform mat4 Vmatrix;
+  uniform mat4 Mmatrix;
+  uniform vec4 u_color;
+  uniform vec3 u_reflectorPos;
+  uniform float u_blinn;
+  uniform float u_power;
+  uniform vec3 u_rocketPos;
+  uniform float u_shadingMode;
+  uniform vec3 u_worldPos;
+
+  flat out vec4 v_color;
+  out vec3 v_position;
+  
+  float shininessVal = 80.0;
+  float mR = 50.0;
+  float limit = 0.83;
+  float innerLimit = 0.93;
+  float outerLimit = 0.95;
+
+  void main() {
+    vec3 lightPos = vec3(100, -300, 110);
+    vec3 ambient_color = vec3(0.4 , 0.4, 0.4);
+    vec3 diffuse_color = vec3(1.0 , 1.0,1.0);
+    vec3 specular_color = vec3(1.0 , 1.0,1.0);
+
+    //reflectors
+    vec3 reflector1Pos = u_reflectorPos;
+    vec3 reflector2Pos = u_rocketPos;
+    vec3 diffuse_color1 = vec3(1.0, 1.0, 1.0);
+    vec3 specular_color1 = vec3(1.0, 1.0, 1.0);
+    vec3 specular_color2 = vec3(1.0, 0.0, 1.0);
+
+    vec3 vertPos = (Mmatrix * a_position).xyz;
+    vec3 normal = vec3(NMmatrix * vec4(a_normal.xyz, 0.0));
+    gl_Position = Pmatrix * MVmatrix * a_position;
+    v_position = (MVmatrix * a_position).xyz;
+
+    vec3 N = normalize(normal);
+    vec3 L = normalize(lightPos - vertPos);
+    vec3 LR = normalize(reflector1Pos - vertPos);
+    vec3 LM = normalize(reflector2Pos - vertPos);
+    vec3 V = normalize(-vertPos);
+    vec3 H = normalize(L + V);
+    vec3 HR = normalize(LR + V);
+    vec3 HM = normalize(LM + V);
+
+    float lambertian = max(dot(N, L), 0.0);
+    float specular = 0.0;
+
+    if(lambertian > 0.0) {
+      vec3 R = reflect(-L, N);
+      float specAngle = max(dot(R, V), 0.0);
+      specular = pow(specAngle, shininessVal);
+    }
+    
+    if(u_blinn == 1.0 && lambertian > 0.0){
+      float specAngle = clamp(dot(H, N), 0.0, 1.0);
+      specular = pow(specAngle, shininessVal);
+    }
+
+    //Reflector
+    float lambertianR = max(dot(N, LR), 0.0);
+    lambertian += lambertianR;
+
+    if(u_blinn != 1.0 && lambertianR > 0.0) {
+      vec3 RR = reflect(-LR, N);
+      float specAngle1 = max(dot(RR, V), 0.0);
+      specular += pow(specAngle1, mR);
+    }
+
+    if(u_blinn == 1.0 && lambertianR > 0.0){
+      float specAngle1 = clamp(dot(HR, N), 0.0, 1.0);
+      specular += pow(specAngle1, mR);
+    }
+
+    //Moving reflector
+    float lambertianM = max(dot(N, LM), 0.0);
+    float inner = cos(radians(6.0));
+    float outer = cos(radians(8.0));
+    float theta = dot(LM, normalize(u_rocketPos));
+    float epsilon   = inner - outer;
+    float intensity = clamp((theta - outer) / epsilon, 0.0, 1.0);
+    lambertianM *= intensity;
+    if(theta > outer){
+      float inLight = max(dot(N, LM), 0.0);
+      float lightM = inLight * lambertianM;
+      specular += inLight * pow(max(dot(N,HM),0.0), shininessVal);
+    }
+    
+    float attenuation = 1.0 / (1.0 + 0.000001 * pow(length(L), 2.0));
+
+    v_color = vec4(vec3(ambient_color + attenuation * ((lambertian * diffuse_color +                     lambertianM * vec3(1.0, 0.0, 0.0)) + (specular * specular_color))), 1.0);
+
+  }
+</script>
+
+<!-- fragment shader -->
+<script id="fragment-shader-3d-3" type="x-shader/x-fragment">#version 300 es
+  precision mediump float;
+  uniform float u_fogDensity;
+  uniform vec4 u_fogColor;
+  uniform vec4 u_color;
+  uniform float u_power;
+
+  vec3 normal;
+  vec3 vertPos;
+
+  flat in vec4 v_color;
+  in vec3 v_position;
+  out vec4 fragColor;
+
+  void main() {
+    #define LOG2 1.442695
+
+    float fogDistance = length(v_position);
+    float fogAmount = 1. - exp2(-pow(u_fogDensity,2.0)*pow(fogDistance,2.0)*LOG2);
+    fogAmount = clamp(fogAmount, 0., 1.);
+    fragColor = vec4(u_power * u_color.rgb * v_color.rgb, 1.0);
+    fragColor = mix(fragColor, u_fogColor, fogAmount);
+  }
+</script>
+<script src="https://webglfundamentals.org/webgl/resources/webgl-utils.js"></script>
+<script src="https://webglfundamentals.org/webgl/resources/m4.js"></script>
+<script src="https://webglfundamentals.org/webgl/resources/primitives.js"></script>
