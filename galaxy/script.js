@@ -45,7 +45,7 @@ function adjustLight() {
     lightPower += lightPower > 0.7 ? 0.001 : 0.0005;
     if (lightPower >= 1.0) decrease = true;
   }
-  body.style.backgroundImage = "linear-gradient(rgb(0 0 0 / " +(lightPower/2.0).toString() +"), rgb(0 0 0 / " +(lightPower).toString() +")), url(galaxy.jpg)";
+  body.style.backgroundImage = "linear-gradient(rgb(0 0 0 / " +(1.0 - lightPower/2.0).toString() +"), rgb(0 0 0 / " +(1.0 - lightPower).toString() +")), url(galaxy.jpg)";
 }
 
 var reflectorPos = [
