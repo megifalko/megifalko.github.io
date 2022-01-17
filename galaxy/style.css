@@ -11,6 +11,9 @@ canvas {
   display: block;
 }
 #panel{
+  width: 100vw;
+  display: flex;
+  justify-content: center;
   background-color: black;
 }
 #day{
