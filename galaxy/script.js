@@ -8,26 +8,17 @@ const loadModel = fetch("https://megifalko.github.io/rr.obj")
     return rocket;
   });
 
-var galaxy;
-const loadGalaxyModel = fetch("https://megifalko.github.io/star.obj")
-  .then((r) => r.text())
-  .then((text) => {
-    console.log(text);
-    galaxy = new OBJ.Mesh(text);
-    console.log(galaxy);
-    return galaxy;
-  });
-
 window.onload = async () => {
   let someData = await loadModel;
-  let someData2 = await loadGalaxyModel;
   console.log("Models downloaded");
   main();
 };
+
 var lightPower = 1.0;
 var decrease = true;
 var stop = true;
 var body = document.body;
+
 function stopLight(){
   if(!stop) {
     lightPower = 1.0;
@@ -55,15 +46,9 @@ var reflectorPos = [
 ];
 ("use strict");
 
-var lightingModel = 1;
-// document.querySelector(
-//   'input[name="lightingModel"]:checked'
-// ).value;
+var lightingModel = $("#select_lighting").val();
 
 function updateLightingModel() {
-  // lightingModel = document.querySelector(
-  //   'input[name="lightingModel"]:checked'
-  // ).value;
   lightingModel = $("#select_lighting").val();
   console.log(lightingModel);
 }
@@ -155,50 +140,6 @@ Node.prototype.updateWorldMatrix = function (parentWorldMatrix) {
 var programInfo;
 var gl;
 
-// window.onload = function(){
-//   OBJ.downloadMeshes({
-//     'rocket': 'https://store2.gofile.io/download/f233ccd8-2b64-49b8-b4c8-926c10f37518/rocket.obj'
-//   }, main());
-// }
-// function loadModel(script)
-// {
-//   var xhr = new XMLHttpRequest();
-//   xhr.open("GET",script.src)
-//   xhr.onreadystatechange = function () {
-//     if(xhr.status !== 200){
-//       console.log(xhr)
-//     }
-//     if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-
-//       // console.log("the script text content is",xhr.responseText);
-//       rocket = new OBJ.Mesh(xhr.responseText);
-//       console.log(rocket);
-
-//     }
-//     main();
-//   };
-//   xhr.send();
-// }
-
-// Array.prototype.slice.call(document.querySelectorAll("script[src='https://megifalko.github.io/spaceShuttle.obj']")).forEach(loadModel);
-function initBkgnd() {
-    backTex = gl.createTexture();
-    backTex.Img = new Image();
-    backTex.Img.onload = function() {
-        handleBkTex(backTex);
-    }
-    backTex.Img.src = "https://megifalko.github.io/galaxy.jpg";
-}
-
-function handleBkTex(tex) {
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex.Img);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-}
-
 function main() {
   // Get A WebGL context
   /** @type {HTMLCanvasElement} */
@@ -224,22 +165,6 @@ function main() {
     indices: rocket.indices,
   };
   rocketBuffer = webglUtils.createBufferInfoFromArrays(gl, arrays);
-
-  console.log(rocketBuffer);
-
-  let arraysGalaxy = {
-    position: galaxy.vertices,
-    texcoord: galaxy.textures,
-    normal: galaxy.vertexNormals,
-    indices: galaxy.indices,
-  };
-  var galaxyBuffer = webglUtils.createBufferInfoFromArrays(gl, arraysGalaxy);
-
-  console.log(galaxyBuffer);
-
-  // var atr = rocketBuffer.attribs;
-  // atr.a_color = sphereBufferInfo.attribs.a_color;
-  // rocketBuffer.attribs = atr;
 
   // setup GLSL program
   programInfo = webglUtils.createProgramInfo(gl, [
@@ -269,25 +194,22 @@ function main() {
   // Let's make all the nodes
   var solarSystemNode = new Node();
   var earthOrbitNode = new Node();
-  earthOrbitNode.localMatrix = m4.translation(200, 0, 0); // earth orbit 100 units from the sun
+  earthOrbitNode.localMatrix = m4.translation(200, 0, 0);
   var moonOrbitNode = new Node();
-  moonOrbitNode.localMatrix = m4.translation(30, 0, 0); // moon 30 units from the earth
+  moonOrbitNode.localMatrix = m4.translation(30, 0, 0);
   var rocketOrbitNode = new Node();
   rocketOrbitNode.localMatrix = m4.translation(-250, 0, 50);
   var galaxyOrbitNode = new Node();
   galaxyOrbitNode.localMatrix = m4.translation(150, 0, 0);
-  
   var mercuryOrbitNode = new Node();
   mercuryOrbitNode.localMatrix = m4.translation(90, 0, 0);
-  
   var venusOrbitNode = new Node();
   venusOrbitNode.localMatrix = m4.translation(150, 0, 0);
-  
   var marsOrbitNode = new Node();
   marsOrbitNode.localMatrix = m4.translation(-300, 0, 0);
-
+  
   var sunNode = new Node();
-  sunNode.localMatrix = m4.scaling(5, 5, 5); // sun a the center
+  sunNode.localMatrix = m4.scaling(5, 5, 5);
   sunNode.drawInfo = {
     uniforms: {
       u_color: [0.6, 0.6, 0, 1],
@@ -297,7 +219,7 @@ function main() {
   };
 
   var earthNode = new Node();
-  earthNode.localMatrix = m4.scaling(2, 2, 2); // make the earth twice as large
+  earthNode.localMatrix = m4.scaling(2, 2, 2);
   earthNode.drawInfo = {
     uniforms: {
       u_color: [0.0, 0.0, 1.0, 1],
@@ -329,19 +251,9 @@ function main() {
     programInfo: programInfo,
     bufferInfo: rocketBuffer,
   };
-
-  var galaxyNode = new Node();
-  galaxyNode.localMatrix = m4.scaling(0.5, 0.5, 0.5);
-  galaxyNode.drawInfo = {
-    uniforms: {
-      u_color: [1.0, 1.0, 1.0, 1.0],
-    },
-    programInfo: programInfo,
-    bufferInfo: galaxyBuffer,
-  };
   
   var mercuryNode = new Node();
-  mercuryNode.localMatrix = m4.scaling(0.6, 0.6, 0.6); // make the earth twice as large
+  mercuryNode.localMatrix = m4.scaling(0.6, 0.6, 0.6);
   mercuryNode.drawInfo = {
     uniforms: {
       u_color: [1.0, 0.0, 0.3, 1],
@@ -351,7 +263,7 @@ function main() {
   };
   
   var venusNode = new Node();
-  venusNode.localMatrix = m4.scaling(1.2, 1.2, 1.2); // make the earth twice as large
+  venusNode.localMatrix = m4.scaling(1.2, 1.2, 1.2);
   venusNode.drawInfo = {
     uniforms: {
       u_color: [1.0, 1.0, 0.3, 1],
@@ -361,7 +273,7 @@ function main() {
   };
   
   var marsNode = new Node();
-  marsNode.localMatrix = m4.scaling(1.4, 1.4, 1.4); // make the earth twice as large
+  marsNode.localMatrix = m4.scaling(1.4, 1.4, 1.4);
   marsNode.drawInfo = {
     uniforms: {
       u_color: [1.0, 0.0, 0.0, 1],
@@ -379,7 +291,6 @@ function main() {
   rocketOrbitNode.setParent(solarSystemNode);
   rocketNode.setParent(rocketOrbitNode);
   galaxyOrbitNode.setParent(solarSystemNode);
-  galaxyNode.setParent(galaxyOrbitNode);
   mercuryOrbitNode.setParent(solarSystemNode);
   venusOrbitNode.setParent(solarSystemNode);
   marsOrbitNode.setParent(solarSystemNode);
@@ -409,20 +320,17 @@ function main() {
 
     // Tell WebGL how to convert from clip space to pixels
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
     gl.enable(gl.CULL_FACE);
     gl.enable(gl.DEPTH_TEST);
 
     // Clear the canvas AND the depth buffer.
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
-    //initBkgnd();
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // Compute the projection matrix
     var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
 
-    // Compute the camera's matrix using look at.
     var earthPos = [
       earthNode.worldMatrix[12],
       earthNode.worldMatrix[13],
@@ -433,6 +341,8 @@ function main() {
       sunNode.worldMatrix[13],
       sunNode.worldMatrix[14],
     ];
+    
+    //Compute camera matrix
     var cameraMatrix;
     var cameraPosition;
     if (cameraMode == 1) {
@@ -460,21 +370,9 @@ function main() {
       var up = [0, 0, 1];
       cameraMatrix = m4.lookAt(cameraPosition, target, up);
     }
-    if (cameraMode == 4) {
-      //observing earth
-      cameraPosition = [
-        earthPos[0] * 2.5,
-        earthPos[1] * 2.5,
-        earthPos[2] + 200,
-      ];
-      var target = [0, 0, 0];
-      var up = [0, 0, 1];
-      cameraMatrix = m4.lookAt(cameraPosition, target, up);
-    }
 
     // Make a view matrix from the camera matrix.
     var viewMatrix = m4.inverse(cameraMatrix);
-
     var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
     // update the local matrices for each object.
@@ -488,7 +386,6 @@ function main() {
       moonOrbitNode.localMatrix,
       moonOrbitNode.localMatrix
     );
-    // spin the earth
     m4.multiply(
       m4.zRotation(-0.05),
       earthNode.localMatrix,
@@ -499,42 +396,48 @@ function main() {
       mercuryOrbitNode.localMatrix,
       mercuryOrbitNode.localMatrix
     );
+    m4.multiply(
+      m4.zRotation(-0.06),
+      mercuryNode.localMatrix,
+      mercuryNode.localMatrix
+    );
      m4.multiply(
       m4.zRotation(-0.013),
       venusOrbitNode.localMatrix,
       venusOrbitNode.localMatrix
+    );
+    m4.multiply(
+      m4.zRotation(-0.04),
+      venusNode.localMatrix,
+      venusNode.localMatrix
     );
      m4.multiply(
       m4.zRotation(-0.008),
       marsOrbitNode.localMatrix,
       marsOrbitNode.localMatrix
     );
-  
+    m4.multiply(
+      m4.zRotation(-0.03),
+      marsNode.localMatrix,
+      marsNode.localMatrix
+    );
     m4.multiply(m4.zRotation(0.01), moonNode.localMatrix, moonNode.localMatrix);
-    
-    
-    
     m4.multiply(
       m4.zRotation(-0.01),
       rocketOrbitNode.localMatrix,
       rocketOrbitNode.localMatrix
     );
-    
-    // m4.translate(rocketOrbitNode.localMatrix, [0, Math.sin(time)*50, 0], rocketOrbitNode.localMatrix);
     m4.multiply(
       m4.yRotation(0.01),
       rocketNode.localMatrix,
       rocketNode.localMatrix
     );
     
-    //console.log(lightingModel)
-    // 
     var rp = m4.multiply(
         m4.translation(refPos[0], refPos[1], refPos[2]),
         rocketNode.worldMatrix
       );
     var rocketPos = [0.9 * rp[12], 0.9 * rp[13], 0.9 * rp[14]];
-    // rocketPos = [rocketNode.worldMatrix[12], rocketNode.worldMatrix[13],rocketNode.worldMatrix[14]];
     // Update all world matrices in the scene graph
     solarSystemNode.updateWorldMatrix();
 
