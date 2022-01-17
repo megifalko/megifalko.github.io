@@ -15,3 +15,10 @@ canvas {
 #day{
   color: white;
 }
+#background{
+  width: 100vw;
+  height: 90vh;
+  display: block;
+  position: absolute;
+  background: linear-gradient(rgb(0 0 0 / 0%), rgb(0 0 0 / 0%));
+}
