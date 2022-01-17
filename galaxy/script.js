@@ -27,11 +27,11 @@ window.onload = async () => {
 var lightPower = 1.0;
 var decrease = true;
 var stop = true;
-var bg = document.getElementById("background");
+var body = document.body;
 function stopLight(){
   if(!stop) {
     lightPower = 1.0;
-    bg.style.backgroundImage = "linear-gradient(rgb(0 0 0 / 0%), rgb(0 0 0 / 0%))";
+    body.style.boxShadow = `inset 0 0 0 1000px rgb(0 0 0 / ${1.0 - lightPower})`;
   }
   stop = !stop;
 }
