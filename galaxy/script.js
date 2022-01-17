@@ -222,7 +222,7 @@ function main() {
   earthNode.localMatrix = m4.scaling(2, 2, 2);
   earthNode.drawInfo = {
     uniforms: {
-      u_color: [0.0, 0.0, 1.0, 1],
+      u_color: [0.180, 0.227, 0.572, 1],
     },
     programInfo: programInfo,
     bufferInfo: sphereBufferInfo,
@@ -256,7 +256,7 @@ function main() {
   mercuryNode.localMatrix = m4.scaling(0.6, 0.6, 0.6);
   mercuryNode.drawInfo = {
     uniforms: {
-      u_color: [1.0, 0.0, 0.3, 1],
+      u_color: [0.662, 0.592, 0.474, 1],
     },
     programInfo: programInfo,
     bufferInfo: sphereBufferInfo,
@@ -266,7 +266,7 @@ function main() {
   venusNode.localMatrix = m4.scaling(1.2, 1.2, 1.2);
   venusNode.drawInfo = {
     uniforms: {
-      u_color: [1.0, 1.0, 0.3, 1],
+      u_color: [0.823, 0.627, 0.415, 1],
     },
     programInfo: programInfo,
     bufferInfo: sphereBufferInfo,
@@ -276,7 +276,7 @@ function main() {
   marsNode.localMatrix = m4.scaling(1.4, 1.4, 1.4);
   marsNode.drawInfo = {
     uniforms: {
-      u_color: [1.0, 0.0, 0.0, 1],
+      u_color: [0.780, 0.266, 0.137, 1],
     },
     programInfo: programInfo,
     bufferInfo: sphereBufferInfo,
