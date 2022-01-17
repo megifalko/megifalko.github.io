@@ -2,15 +2,12 @@ var rocket;
 const loadModel = fetch("https://megifalko.github.io/rr.obj")
   .then((r) => r.text())
   .then((text) => {
-    console.log(text);
     rocket = new OBJ.Mesh(text);
-    console.log(rocket);
     return rocket;
   });
 
 window.onload = async () => {
   let someData = await loadModel;
-  console.log("Models downloaded");
   main();
 };
 
@@ -50,7 +47,6 @@ var lightingModel = $("#select_lighting").val();
 
 function updateLightingModel() {
   lightingModel = $("#select_lighting").val();
-  console.log(lightingModel);
 }
 
 function updateLight() {
@@ -58,7 +54,6 @@ function updateLight() {
   var y = $("#slider-y").val();
   var z = $("#slider-z").val();
   reflectorPos = [x, y, z];
-  console.log(reflectorPos);
   $("#slider-x-v").html(x);
   $("#slider-y-v").html(y);
   $("#slider-z-v").html(z);
@@ -70,18 +65,15 @@ function updateMovingLight() {
   var ry = $("#slider-ry").val();
   var rz = $("#slider-rz").val();
   refPos = [rx, ry, rz];
-  console.log(reflectorPos);
   $("#slider-x-rv").html(rx);
   $("#slider-y-rv").html(ry);
   $("#slider-z-rv").html(rz);
 }
 
 var shadingMode = $("#select_shading").val();
-console.log(shadingMode);
 
 const shadingChanged = () => {
   shadingMode = $("#select_shading").val();
-  console.log(shadingMode);
   programInfo = webglUtils.createProgramInfo(gl, [
     "vertex-shader-3d-" + shadingMode.toString(),
     "fragment-shader-3d-" + shadingMode.toString(),
@@ -94,7 +86,6 @@ const getShading = () => {
 };
 
 var cameraMode = $("#select_camera").val();
-console.log(cameraMode);
 const cameraChanged = () => {
   cameraMode = $("#select_camera").val();
 };
@@ -156,7 +147,6 @@ function main() {
     36,
     36
   );
-  console.log(sphereBufferInfo);
 
   let arrays = {
     position: rocket.vertices,
