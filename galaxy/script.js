@@ -27,11 +27,11 @@ window.onload = async () => {
 var lightPower = 1.0;
 var decrease = true;
 var stop = true;
-var body = document.querySelector("body");
+var bg = document.getElementById("background");
 function stopLight(){
   if(!stop) {
     lightPower = 1.0;
-    body.style.backgroundImage = "linear-gradient(rgb(0 0 0 / 0%), rgb(0 0 0 / 0%)), url(galaxy.jpg)";
+    bg.style.backgroundImage = "linear-gradient(rgb(0 0 0 / 0%), rgb(0 0 0 / 0%))";
   }
   stop = !stop;
 }
