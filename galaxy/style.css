@@ -14,7 +14,11 @@ canvas {
   width: 100vw;
   display: flex;
   justify-content: center;
+  align-items: center;
   background-color: black;
+}
+select{
+  height: 20px;
 }
 #day{
   color: white;
