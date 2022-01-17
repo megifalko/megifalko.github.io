@@ -3,6 +3,7 @@ body {
   background-color: black;
   background-image: linear-gradient(rgb(0 0 0 / 0%), rgb(0 0 0 / 0%)), url(galaxy.jpg);
   background-size: cover;
+  inset 0 0 0 1000px rgb(0 0 0 / 0);
 }
 canvas {
   width: 100vw;
@@ -14,11 +15,4 @@ canvas {
 }
 #day{
   color: white;
-}
-#background{
-  width: 100vw;
-  height: 90vh;
-  display: block;
-  position: absolute;
-  background: linear-gradient(rgb(0 0 0 / 0%), rgb(0 0 0 / 0%));
 }
